@@ -83,7 +83,7 @@
     _index --;
     
     // Redo previous action if needed.
-    if (_performPreviousActionRedoWhenUndo) {
+    if (_performPreviousActionRedoWhenUndo && _index >= 0) {
         BOOL prevIsUndoGroup = [_stack[_index] isKindOfClass:[NSArray class]];
         
         if (prevIsUndoGroup) {
