@@ -39,14 +39,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performPreviousActionRedoWhenUndo:(BOOL)yesOrNo;
 
 - (void)addAction:(id<PDUndoActionType>)action;
+- (void)removeAllActions;
 
 - (void)undo;
 - (void)redo;
 
-- (void)removeAllActions;
-
-//- (void)beginUndoGrouping;
-//- (void)endUndoGrouping;
+- (void)beginUndoGrouping;
+- (void)endUndoGrouping;
 
 @end
 

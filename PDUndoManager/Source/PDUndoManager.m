@@ -11,7 +11,10 @@
 @implementation PDUndoManager {
     BOOL _performPreviousActionRedoWhenUndo;
     NSInteger _index;
-    NSMutableArray<id<PDUndoActionType>> *_stack;
+    NSMutableArray *_stack; // Store action or action collection.
+    
+    BOOL _didOpenUndoGroup;
+    NSMutableArray *_undoGroup;
 }
 
 - (instancetype)init {
@@ -19,6 +22,9 @@
     if (self) {
         _index = -1;
         _stack = [NSMutableArray array];
+        
+        _didOpenUndoGroup = NO;
+        _undoGroup = [NSMutableArray array];
     }
     return self;
 }
@@ -35,38 +41,11 @@
         [self removeDeprecatedActions];
     }
     
-    [_stack addObject:action];
-    _index ++;
-}
-
-- (void)undo {
-    if (!self.canUndo) { return; }
-    
-    id<PDUndoActionType> action = _stack[_index];
-    !action.undo ?: action.undo();
-    
-    _index --;
-    
-    if (_performPreviousActionRedoWhenUndo) {
-        action = _stack[_index];
-        !action.redo ?: action.redo();
-    }
-    
-    if (_index == -1 && [self.delegate respondsToSelector:@selector(didUndoAllActionsInUndoManager:)]) {
-        [self.delegate didUndoAllActionsInUndoManager:self];
-    }
-}
-
-- (void)redo {
-    if (!self.canRedo) { return; }
-    
-    _index ++;
-    
-    id<PDUndoActionType> action = _stack[_index];
-    !action.redo ?: action.redo();
-    
-    if ([self indexAtStackTop] && [self.delegate respondsToSelector:@selector(didRedoAllActionsInUndoManager:)]) {
-        [self.delegate didRedoAllActionsInUndoManager:self];
+    if (_didOpenUndoGroup) {
+        [_undoGroup addObject:action];
+    } else {
+        [_stack addObject:action];
+        _index ++;
     }
 }
 
@@ -77,6 +56,94 @@
     if ([self.delegate respondsToSelector:@selector(didRemoveAllActionsInUndoManager:)]) {
         [self.delegate didRemoveAllActionsInUndoManager:self];
     }
+}
+
+- (void)undo {
+    NSAssert(!_didOpenUndoGroup, @"Must call `- endUndoGrouping` before undo!");
+    
+    if (_didOpenUndoGroup) { return; }
+    if (!self.canUndo) { return; }
+    
+    // Undo current action.
+    BOOL currentIsUndoGroup = [_stack[_index] isKindOfClass:[NSArray class]];
+    
+    if (currentIsUndoGroup) {
+        NSArray *undoGroup = _stack[_index];
+
+        for (id<PDUndoActionType> action in undoGroup) {
+            !action.undo ?: action.undo();
+        }
+    } else {
+        id<PDUndoActionType> action = _stack[_index];
+        !action.undo ?: action.undo();
+    }
+    
+    // Update index.
+    _index --;
+    
+    // Redo previous action if needed.
+    if (_performPreviousActionRedoWhenUndo) {
+        BOOL prevIsUndoGroup = [_stack[_index] isKindOfClass:[NSArray class]];
+        
+        if (prevIsUndoGroup) {
+            NSArray *undoGroup = _stack[_index];
+            
+            for (id<PDUndoActionType> action in undoGroup) {
+                !action.redo ?: action.redo();
+            }
+        } else {
+            id<PDUndoActionType> action = _stack[_index];
+            !action.redo ?: action.redo();
+        }
+    }
+    
+    // Notify delegate.
+    if (_index == -1 && [self.delegate respondsToSelector:@selector(didUndoAllActionsInUndoManager:)]) {
+        [self.delegate didUndoAllActionsInUndoManager:self];
+    }
+}
+
+- (void)redo {
+    NSAssert(!_didOpenUndoGroup, @"Must call `- endUndoGrouping` before redo!");
+    
+    if (_didOpenUndoGroup) { return; }
+    if (!self.canRedo) { return; }
+    
+    // Update index.
+    _index ++;
+    
+    // Redo action.
+    BOOL currentIsUndoGroup = [_stack[_index] isKindOfClass:[NSArray class]];
+    
+    if (currentIsUndoGroup) {
+        NSArray *undoGroup = _stack[_index];
+        
+        for (id<PDUndoActionType> action in undoGroup) {
+            !action.redo ?: action.redo();
+        }
+    } else {
+        id<PDUndoActionType> action = _stack[_index];
+        !action.redo ?: action.redo();
+    }
+    
+    // Notify delegate.
+    if ([self indexAtStackTop] && [self.delegate respondsToSelector:@selector(didRedoAllActionsInUndoManager:)]) {
+        [self.delegate didRedoAllActionsInUndoManager:self];
+    }
+}
+
+- (void)beginUndoGrouping {
+    _didOpenUndoGroup = YES;
+    _index ++;
+}
+
+- (void)endUndoGrouping {
+    _didOpenUndoGroup = NO;
+    
+    NSArray *undoGroup = [_undoGroup copy];
+    [_stack addObject:undoGroup];
+    
+    [_undoGroup removeAllObjects];
 }
 
 #pragma mark - Private Methods
