@@ -20,6 +20,7 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
+        _performPreviousActionRedoWhenUndo = NO;
         _index = -1;
         _stack = [NSMutableArray array];
         
