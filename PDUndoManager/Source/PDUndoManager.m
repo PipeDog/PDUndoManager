@@ -134,11 +134,19 @@
 }
 
 - (void)beginUndoGrouping {
+    if (_didOpenUndoGroup) {
+        return;
+    }
+    
     _didOpenUndoGroup = YES;
     _index ++;
 }
 
 - (void)endUndoGrouping {
+    if (!_didOpenUndoGroup) {
+        return;
+    }
+    
     _didOpenUndoGroup = NO;
     
     NSArray *undoGroup = [_undoGroup copy];
@@ -151,14 +159,19 @@
 - (void)removeDeprecatedActions {
     if ([self indexAtStackTop]) { return; }
     
+    NSInteger count = _stack.count;
     NSInteger loc = _index + 1;
-    NSInteger len = _stack.count - (_index + 1);
-    NSRange range = NSMakeRange(loc, len);
-    [_stack removeObjectsInRange:range];
+    NSInteger len = count - (_index + 1);
+    
+    if (len > 0) {
+        NSRange range = NSMakeRange(loc, len);
+        [_stack removeObjectsInRange:range];
+    }
 }
 
 - (BOOL)indexAtStackTop {
-    return (_index == _stack.count - 1);
+    NSInteger count = _stack.count;
+    return (_index == count - 1);
 }
 
 #pragma mark - Getter Methods
