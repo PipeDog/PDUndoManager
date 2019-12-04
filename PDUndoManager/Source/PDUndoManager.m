@@ -69,11 +69,11 @@
     BOOL currentIsUndoGroup = [_stack[_index] isKindOfClass:[NSArray class]];
     
     if (currentIsUndoGroup) {
-        NSArray *undoGroup = _stack[_index];
+        NSArray<id<PDUndoActionType>> *undoGroup = _stack[_index];
 
-        for (id<PDUndoActionType> action in undoGroup) {
-            !action.undo ?: action.undo();
-        }
+        [undoGroup enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(id<PDUndoActionType>  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            !obj.undo ?: obj.undo();
+        }];
     } else {
         id<PDUndoActionType> action = _stack[_index];
         !action.undo ?: action.undo();
