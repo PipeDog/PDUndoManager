@@ -53,6 +53,7 @@
 - (void)removeAllActions {
     _index = -1;
     [_stack removeAllObjects];
+    [_undoGroup removeAllObjects];
     
     if ([self.delegate respondsToSelector:@selector(didRemoveAllActionsInUndoManager:)]) {
         [self.delegate didRemoveAllActionsInUndoManager:self];
@@ -62,7 +63,9 @@
 - (void)undo {
     NSAssert(!_didOpenUndoGroup, @"Must call `- endUndoGrouping` before undo!");
     
-    if (_didOpenUndoGroup) { return; }
+    if (_didOpenUndoGroup) {
+        [self endUndoGrouping];
+    }
     if (!self.canUndo) { return; }
     
     // Undo current action.
@@ -107,7 +110,9 @@
 - (void)redo {
     NSAssert(!_didOpenUndoGroup, @"Must call `- endUndoGrouping` before redo!");
     
-    if (_didOpenUndoGroup) { return; }
+    if (_didOpenUndoGroup) {
+        [self endUndoGrouping];
+    }
     if (!self.canRedo) { return; }
     
     // Update index.
