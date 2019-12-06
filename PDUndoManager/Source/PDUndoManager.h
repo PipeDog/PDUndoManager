@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)didRemoveAllActionsInUndoManager:(PDUndoManager *)undoManager;
 - (void)didUndoAllActionsInUndoManager:(PDUndoManager *)undoManager;
 - (void)didRedoAllActionsInUndoManager:(PDUndoManager *)undoManager;
+- (void)didChangedIndexInUndoManager:(PDUndoManager *)undoManager;
 
 @end
 

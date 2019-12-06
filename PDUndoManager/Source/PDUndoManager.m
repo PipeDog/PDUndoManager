@@ -48,6 +48,10 @@
         [_stack addObject:action];
         _index ++;
     }
+    
+    if ([self.delegate respondsToSelector:@selector(didChangedIndexInUndoManager:)]) {
+        [self.delegate didChangedIndexInUndoManager:self];
+    }
 }
 
 - (void)removeAllActions {
@@ -57,6 +61,9 @@
     
     if ([self.delegate respondsToSelector:@selector(didRemoveAllActionsInUndoManager:)]) {
         [self.delegate didRemoveAllActionsInUndoManager:self];
+    }
+    if ([self.delegate respondsToSelector:@selector(didChangedIndexInUndoManager:)]) {
+        [self.delegate didChangedIndexInUndoManager:self];
     }
 }
 
@@ -105,6 +112,9 @@
     if (_index == -1 && [self.delegate respondsToSelector:@selector(didUndoAllActionsInUndoManager:)]) {
         [self.delegate didUndoAllActionsInUndoManager:self];
     }
+    if ([self.delegate respondsToSelector:@selector(didChangedIndexInUndoManager:)]) {
+        [self.delegate didChangedIndexInUndoManager:self];
+    }
 }
 
 - (void)redo {
@@ -136,6 +146,9 @@
     if ([self indexAtStackTop] && [self.delegate respondsToSelector:@selector(didRedoAllActionsInUndoManager:)]) {
         [self.delegate didRedoAllActionsInUndoManager:self];
     }
+    if ([self.delegate respondsToSelector:@selector(didChangedIndexInUndoManager:)]) {
+        [self.delegate didChangedIndexInUndoManager:self];
+    }
 }
 
 - (void)beginUndoGrouping {
@@ -160,6 +173,10 @@
     }
     
     [_undoGroup removeAllObjects];
+    
+    if ([self.delegate respondsToSelector:@selector(didChangedIndexInUndoManager:)]) {
+        [self.delegate didChangedIndexInUndoManager:self];
+    }
 }
 
 #pragma mark - Private Methods
