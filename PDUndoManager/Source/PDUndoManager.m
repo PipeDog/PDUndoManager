@@ -144,7 +144,6 @@
     }
     
     _didOpenUndoGroup = YES;
-    _index ++;
 }
 
 - (void)endUndoGrouping {
@@ -155,7 +154,10 @@
     _didOpenUndoGroup = NO;
     
     NSArray *undoGroup = [_undoGroup copy];
-    [_stack addObject:undoGroup];
+    if (undoGroup.count > 0) {
+        [_stack addObject:undoGroup];
+        _index ++;
+    }
     
     [_undoGroup removeAllObjects];
 }
