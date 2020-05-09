@@ -35,7 +35,7 @@
     _performPreviousActionRedoWhenUndo = yesOrNo;
 }
 
-- (void)addAction:(id<PDUndoActionType>)action {
+- (void)addAction:(id<PDUndoAction>)action {
     if (!action) { return; }
     
     if (![self indexAtStackTop]) {
@@ -79,13 +79,13 @@
     BOOL currentIsUndoGroup = [_stack[_index] isKindOfClass:[NSArray class]];
     
     if (currentIsUndoGroup) {
-        NSArray<id<PDUndoActionType>> *undoGroup = _stack[_index];
+        NSArray<id<PDUndoAction>> *undoGroup = _stack[_index];
 
-        [undoGroup enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(id<PDUndoActionType>  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [undoGroup enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(id<PDUndoAction>  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             !obj.undo ?: obj.undo();
         }];
     } else {
-        id<PDUndoActionType> action = _stack[_index];
+        id<PDUndoAction> action = _stack[_index];
         !action.undo ?: action.undo();
     }
     
@@ -99,11 +99,11 @@
         if (prevIsUndoGroup) {
             NSArray *undoGroup = _stack[_index];
             
-            for (id<PDUndoActionType> action in undoGroup) {
+            for (id<PDUndoAction> action in undoGroup) {
                 !action.redo ?: action.redo();
             }
         } else {
-            id<PDUndoActionType> action = _stack[_index];
+            id<PDUndoAction> action = _stack[_index];
             !action.redo ?: action.redo();
         }
     }
@@ -134,11 +134,11 @@
     if (currentIsUndoGroup) {
         NSArray *undoGroup = _stack[_index];
         
-        for (id<PDUndoActionType> action in undoGroup) {
+        for (id<PDUndoAction> action in undoGroup) {
             !action.redo ?: action.redo();
         }
     } else {
-        id<PDUndoActionType> action = _stack[_index];
+        id<PDUndoAction> action = _stack[_index];
         !action.redo ?: action.redo();
     }
     

@@ -12,9 +12,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol PDUndoActionType <NSObject>
+@protocol PDUndoAction <NSObject>
 
-@property (nonatomic, strong) id target;
 @property (nonatomic, copy) void (^redo)(void);
 @property (nonatomic, copy) void (^undo)(void);
 
@@ -39,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)performPreviousActionRedoWhenUndo:(BOOL)yesOrNo;
 
-- (void)addAction:(id<PDUndoActionType>)action;
+- (void)addAction:(id<PDUndoAction>)action;
 - (void)removeAllActions;
 
 - (void)undo;
